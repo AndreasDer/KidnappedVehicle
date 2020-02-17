@@ -22,6 +22,7 @@ using std::string;
 using std::vector;
 
 void ParticleFilter::init(double x, double y, double theta, double std[]) {
+    std::default_random_engine gen;
   /**
    * TODO: Set the number of particles. Initialize all particles to 
    *   first position (based on estimates of x, y, theta and their uncertainties
@@ -30,12 +31,28 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
    * NOTE: Consult particle_filter.h for more information about this method 
    *   (and others in this file).
    */
-  num_particles = 0;  // TODO: Set the number of particles
-
+   // This lines create a normal (Gaussian) distribution for x,y and theta
+    std::normal_distribution<double> dist_x(x, std[0]);
+    std::normal_distribution<double> dist_y(y, std[1]);
+    std::normal_distribution<double> dist_theta(theta, std[2]);
+  num_particles = 100;  // TODO: Set the number of particles
+  for (int i = 0; i < num_particles; i++) {
+      Particle p = Particle();
+      p.id = i;
+      p.weight = 1;
+      p.x= dist_x(gen);
+      p.y = dist_y(gen);
+      p.theta = dist_theta(gen);
+      particles.push_back(p);
+  }
+  is_initialized = true;
 }
 
 void ParticleFilter::prediction(double delta_t, double std_pos[], 
                                 double velocity, double yaw_rate) {
+
+    std::default_random_engine gen;
+    double x, y, theta;
   /**
    * TODO: Add measurements to each particle and add random Gaussian noise.
    * NOTE: When adding noise you may find std::normal_distribution 
@@ -43,7 +60,19 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
    *  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
    *  http://www.cplusplus.com/reference/random/default_random_engine/
    */
-
+    for (int i = 0; i < num_particles;i++) {
+        Particle p = particles[i];
+        theta = p.theta + yaw_rate * delta_t;
+        x = p.x + velocity / yaw_rate*(sin(theta)-sin(p.theta));
+        y = p.y + velocity / yaw_rate * (cos(theta) - cos(p.theta));
+        std::normal_distribution<double> dist_x(x, std_pos[0]);
+        std::normal_distribution<double> dist_y(y, std_pos[1]);
+        std::normal_distribution<double> dist_theta(theta, std_pos[2]);
+        p.theta = dist_theta(gen);
+        p.x = dist_x(x);
+        p.y = dist_y(y);
+        particles[i] = p;
+    }
 }
 
 void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted, 
