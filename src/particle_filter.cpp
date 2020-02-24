@@ -35,7 +35,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
     std::normal_distribution<double> dist_x(x, std[0]);
     std::normal_distribution<double> dist_y(y, std[1]);
     std::normal_distribution<double> dist_theta(theta, std[2]);
-  num_particles = 100;  // TODO: Set the number of particles
+  num_particles = 50;  // TODO: Set the number of particles
   for (int i = 0; i < num_particles; i++) {
       Particle p = Particle();
       p.id = i;
@@ -60,11 +60,11 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
    *  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
    *  http://www.cplusplus.com/reference/random/default_random_engine/
    */
-    for (int i = 0; i < num_particles;i++) {
+    for (int i = 0; i < num_particles; i++) {
         Particle p = particles[i];
         theta = p.theta + yaw_rate * delta_t;
-        x = p.x + velocity / yaw_rate*(sin(theta)-sin(p.theta));
-        y = p.y + velocity / yaw_rate * (cos(theta) - cos(p.theta));
+        x = p.x + velocity / yaw_rate * (sin(theta) - sin(p.theta));
+        y = p.y + velocity / yaw_rate * (cos(p.theta) - cos(theta));
         std::normal_distribution<double> dist_x(x, std_pos[0]);
         std::normal_distribution<double> dist_y(y, std_pos[1]);
         std::normal_distribution<double> dist_theta(theta, std_pos[2]);
